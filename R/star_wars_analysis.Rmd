@@ -1,0 +1,98 @@
+---
+title: "Assignment 1"
+author: "Efe İncefikir"
+date: "16 01 2022"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set( warning = FALSE, message = FALSE)
+```
+
+```{r include=FALSE}
+library(tidyverse)
+library(knitr)
+```
+
+With using “starwars” tibble in dplyr package, please answer the following questions:
+
+1-) How many characters do have at least one starship? List the names of the characters having at least one starship.
+
+```{r}
+list = filter(starwars,starships!= "character(0)")
+
+```
+"`r list $ name`" 
+
+These are the characters that have at least one starship
+
+2-) Get the frequencies of the eye color of the characters. Rank them from most to least. \textcolor{red}{red}
+
+```{r echo= FALSE}
+
+eye_frequency<-starwars %>%
+  group_by(eye_color) %>%
+  summarize(
+    count= n()
+    
+  )
+
+kable(arrange(eye_frequency, desc(count)))
+
+```
+
+3-) According to the data available, what are the mean (average) age values across each species? Find the 3 oldest species. Note that in the data, there is no age column, instead there is a birth_year column. This column represents how many years before the Battle of Yavin the character was born. So take this column as the ages of characters at the Battle of Yavin and calculate the mean.
+
+```{r echo =FALSE}
+no_null_list<-filter(starwars,birth_year !="N/A")
+mean_age<-no_null_list %>%
+  group_by(species) %>%
+  summarize(
+    mean_birth=mean(birth_year)
+  )
+a1<-arrange(mean_age,desc((mean_birth)))
+kable(head(a1,3))
+```
+
+
+4-) Create a new data set by adding a new observation to this data. This observation should be based on your own character (your name or nickname, your weight and height, your homeworld, your starships etc). Note that you can pick one or more than one Star Wars films in which you played as a movie star.
+```{r echo=FALSE}
+sw_character<-rbind(starwars,c("Efe İncefikir", 183, 95.0, "black","light","brown", 22, "male", "masculine", "Naboo", "Human","The Phantom Menace", "Snowspeeder" , "X-wing"))
+
+ sw_character$height<- as.integer(sw_character$height)
+ sw_character$mass<- as.double(sw_character$mass)
+ kable(tail(sw_character, 1))
+```
+
+5-) Calculate the body mass index (BMI) values (dividing the mass value in kg to the square of the height value in meter) for all observations and categorize the observations as underweight (BMI below 18.5), healthy (BMI between 18.5-24.99), overweight (BMI between 25.0-29.99) and obese (BMI above 30.0). Add these two variables to your new data created at the 4th question.
+
+```{r echo = FALSE}
+sw_character<- mutate(sw_character, BMI= mass/ ((height/100)^2))
+sw_character <-mutate(sw_character, weight_type= if_else(BMI< 18.5, "underweight", if_else(BMI <25, "healthy", if_else(BMI <30, "overweight", "obese"))))
+
+kable(tail(sw_character, 1))
+
+```
+6-) Plot the distribution of ages less than 100 by BMI groups. (i.e. use filter function to select the ages less then 100)
+```{r echo = FALSE}
+sw_character$birth_year<-as.integer(sw_character$birth_year)
+age_below_hundred<-filter(sw_character,birth_year<100.0)
+
+ggplot(data=age_below_hundred)+
+  geom_point(mapping=aes(x=birth_year,y=BMI))
+
+```
+
+
+7-) By plotting a graph, show the relationship between age and BMI values (use point and line at the same time). Re-plot the same graph after filtering the data as both age and BMI less than 100.
+
+```{r echo= FALSE}
+ggplot(data=sw_character)+
+  geom_point(mapping=aes(x=birth_year,y=BMI))+
+  geom_smooth(mapping=aes(x=birth_year,y=BMI))
+
+ggplot(data=age_below_hundred,mapping=aes(x=birth_year,y=BMI))+
+  geom_point()+
+  geom_smooth(data=filter(age_below_hundred,birth_year<100 & BMI<100))
+
+```
