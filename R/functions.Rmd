@@ -1,0 +1,115 @@
+---
+title: "Assignment 3"
+author: "Efe İncefikir"
+date: "16 01 2022"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+```{r, include=FALSE}
+library(tidyverse)
+library(stringr)
+set.seed(2018556453)
+stringr::sentences
+
+```
+
+
+ 1-) Write a function that finds a prime number(s) given a set of numbers. Your function also provides prime factors of non-prime numbers. The function you will write should return the prime number(s) given in this vector and the non-prime number(s) with their prime factors. For example you have a vector of numbers like (89, 107, 597, 931, 1083). Your result will be
+
+Prime numbers : 89 107
+
+Non-prime numbers : 597 [3 199]  931 [7 7 19] 1083 [3 19 19]
+
+```{r echo=FALSE}
+testArray= c(89, 107, 597, 931, 1083)
+primeChecker <- function(x) {
+  primeNumbers= c()
+  nonPrimeNumbers= c()
+  primeFactors = c()
+  for(i in x) {
+    if (i == 2) {
+      primeNumbers <- c(primeNumbers, i) 
+    } else if (any(i %% 2:(i-1) == 0)) {
+      
+      
+      nonPrimeNumbers <- c(nonPrimeNumbers,i)
+      if (i > 2) {
+        primeFactors <- numeric()
+        while(i %% 2 == 0){
+          primeFactors = c(primeFactors, 2)
+          i = i/2
+        }
+        n = 3
+        while(i != 1) {
+          while(i %% n == 0) {
+            primeFactors = c(primeFactors, n)
+            i = i/n
+          }
+          n = n + 2
+        }
+      }
+      
+      nonPrimeNumbers <- c(nonPrimeNumbers,"[" ,primeFactors, "]")
+      
+    } else { 
+      primeNumbers <- c(primeNumbers, i)
+    }
+    
+  }
+  cat( "prime numbers:" , primeNumbers, "\n")
+  cat( "non-prime numbers:" , nonPrimeNumbers)
+}
+
+primeChecker(testArray)
+
+
+
+
+```
+2-)   Write a function that finds the letter numbers of all words in a given text and sorts the text according to those numbers from words with few letters to words with many letters. Sort the words containing the same number of letters alphabetically.
+
+For having text, you may use Sentences in tidyverse. Select 5 or 6 sentences randomly from Sentences. For example, you have these sentences
+
+
+
+## [1] "We find joy in the simplest things. He wrote down a long list of items. The hail pattered on the burnt brown grass. Screen the porch with woven straw mats. The theft of the pearl pin was kept secret. Sweet words work better than fierce."
+
+
+
+Your function should return the result like this
+
+## [1] "a he in of of on we joy pin the the the the the the was down find hail kept list long mats than with work brown burnt grass items pearl porch straw sweet theft words woven wrote better fierce screen secret things pattered simplest"
+
+```{r echo=FALSE}
+
+
+wordOrderFunc <- function(x) {
+  sample2 <- x %>%
+    str_split(" ") %>%
+    simplify() %>%
+    unique()
+  
+
+  sample2<-str_to_lower(sample2)
+  sample2<-str_replace_all(sample2,"[,.']","")
+
+
+
+  
+ sortedArray = sample2[order(nchar(sample2), sample2)]
+ 
+return(paste(sortedArray, collapse = " ")) 
+  
+  
+
+  
+}
+smpl<-sample(sentences,size=5)
+wordOrderFunc(smpl)
+
+
+```

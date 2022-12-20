@@ -1,0 +1,138 @@
+---
+title: "Assignment 2"
+author: "Efe İncefikir"
+date: "16 01 2022"
+output:
+  
+  word_document: default
+  html_document:
+    df_print: paged
+always_allow_html: true
+---
+---
+****
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+
+
+
+```
+
+Save the attached file (covid-data-2020) as an Excel file (.csv, .xls or .xlsx format), then import this data to R. (You can supply an inline CSV file instead of importing, if you like).
+
+Take a random sample of 1000 observations from this data (you can use sample() function), and save this sample as a new data. Answer the following questions using this sample.
+
+-- Part 1 of 2 ---
+
+```{r, include= FALSE}
+library(tidyverse)
+library(data.table)
+library(knitr)
+database <- read.csv("C:\\R\\covid-data-2020.csv" ,sep= "\t" , header = TRUE )
+set.seed(2018556453)
+sample <- database[sample(nrow(database), 1000) ,]
+```
+
+1-) Calculate the five-number summary statistics (minimum-Q1-median-Q3-maximum) of covid-19 daily new cases for each country within each month. (you can use quantile() function to get the quartiles)
+
+```{r}
+
+firstQuestion <- sample %>%
+  group_by(location,month) %>%
+  summarize( min = min(new_cases), Q1= quantile( new_cases , 0.25, na.rm=TRUE) , Q2= quantile(new_cases, 0.50, na.rm=TRUE),
+             Q3 = quantile(new_cases, 0.75, na.rm= TRUE), max= max(new_cases))
+
+kable(head(firstQuestion,20)) #First 20 rows
+```
+
+2-)Find the highest daily cases and deaths separately for each country. 
+Identify the month in which the mean daily cases is the highest for each country.
+
+```{r echo = FALSE}
+secondQuestion <- sample %>%
+  group_by(location) %>%
+  summarize( max_case = max(new_cases, na.rm= TRUE) , max_deaths = max(new_deaths,na.rm=TRUE))
+kable(head(secondQuestion,20)) #First 20 rows
+
+```
+
+3-) Identify the month in which the mean daily cases is the highest for each country.
+```{r echo = FALSE}
+temp <- sample %>%
+  group_by(location, month) %>%
+  summarize( mean_Cases = max(mean(new_cases, na.rm=TRUE)))
+
+ temp2 <- arrange(temp, desc(mean_Cases))
+ row_to_keep <- c(!duplicated(temp2$location))
+thirdQuestion <- temp2[row_to_keep, ]
+
+kable(head(thirdQuestion,20)) #First 20 rows
+```
+
+4-) Select 3 country and plot the distribution of daily cases by month. Use location as clusters (i.e., color=location) to show the difference between countries.
+```{r echo = FALSE}
+
+fourthQuestion<- filter(sample,location ==c("Turkey","Russia","France"))
+ggplot(data=fourthQuestion,mapping=aes(x=month,y=new_cases,color=location)) +
+  geom_smooth()
+
+ggplot(data=fourthQuestion,mapping=aes(x=month,y=new_cases,color=location)) +
+  geom_boxplot()
+
+```
+
+-- Part 2 of 2 ---
+```{r, include= FALSE}
+library(tidyverse)
+set.seed(2018556453)
+
+library(stringr)
+stringr::sentences
+
+```
+
+
+1-) Take a random sample of 100 sentences from this data, then split these sentences into words and take each word as a member of a vector. After removing duplicated words (you can use unique() function to remove duplicated words), save this sample as a new data. With this new data, provide the answers.
+```{r echo= FALSE}
+smpl<-sample(sentences,size=100)
+view(smpl)
+
+sample2 <- smpl %>%
+  str_split(" ") %>%
+  simplify() %>%
+  unique()
+
+sample2<-str_to_lower(sample2)
+sample2<-str_replace_all(sample2,"[,.']","")
+
+kable(head(sample2,20)) #First 20 words
+```
+
+2-)Find words which are starting with “a” and ending with “e”.
+```{r}
+#str_view(sample2, "e$", match=TRUE)
+part2SecondQuestion <-str_subset(sample2, "^a.*e$", negate= FALSE)
+part2SecondQuestion
+```
+
+
+3-) Calculate the number of words which have more than 3 vowels
+```{r echo=FALSE}
+
+vowel <- str_count(sample2, "^(.[aeuio].*){4,}$")
+part2ThirdQuestion <- sum(vowel == 1)
+part2ThirdQuestion
+
+```
+4-) List the five longest word in your data
+```{r echo=FALSE}
+temp3 <- order(str_length(sample2), decreasing = TRUE)
+fourth_result<-head(sample2[temp3], 5)
+fourth_result
+```
+
+5-) Try to find word(s) which contain any of these words: age, any, day, exp, her, pro, the.
+```{r echo=FALSE}
+part2FifthQuestion<- sample2[str_detect(sample2, "her|any|day|exp|age|pro|the")]
+part2FifthQuestion
+```
